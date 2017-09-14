@@ -2,11 +2,12 @@
 
 namespace App\Services\Docker\Provisioning;
 
-use Http\Client\Common\Exception\ClientErrorException;
 use Docker\API\Model\ContainerConfig;
+use Docker\API\Model\ContainerCreateResult;
 use Docker\API\Model\HostConfig;
 use Docker\API\Model\PortBinding;
 use Docker\Docker;
+use Http\Client\Common\Exception\ClientErrorException;
 
 /**
  * Class ProvisioningService
@@ -43,32 +44,44 @@ class ProvisioningService implements ProvisioningServiceInterface
      * @param string $name
      * @param array $envVariables
      * @param string $hostPort
+     * @param string $containerPort
      * @param string $image
-     * @return \Psr\Http\Message\ResponseInterface|string
+     * @param string $hostIp
+     * @return ContainerCreateResult;
      */
     public function createContainer(
-        string $name,
         array $envVariables,
         string $hostPort = '25565',
-        string $image = 'itzg/minecraft-server'
+        string $containerPort = '25565',
+        string $image = 'itzg/minecraft-server',
+        string $hostIp = null,
+        string $name = null
+
     ) {
 
         $containerManager = $this->docker->getContainerManager();
 
         $this->containerConfig->setImage($image);
-        $this->hostConfig->setPortBindings($this->prepareArrayForIpPortsBinding($hostPort));
+        $this->hostConfig->setPortBindings($this->prepareArrayForIpPortsBinding($hostPort, null, $containerPort));
         $this->containerConfig->setHostConfig($this->hostConfig);
-
+        $this->containerConfig->setAttachStdin(true);
+        $this->containerConfig->setAttachStdout(true);
+        $this->containerConfig->setAttachStderr(true);
         $VariableEnv = $this->prepareEnvVariables($envVariables);
         $this->containerConfig->setEnv($VariableEnv);
 
+
         try {
-            $containerCreated = $containerManager->create($this->containerConfig, ['name' => $name]);
+            if (!empty($name)) {
+                $containerCreated = $containerManager->create($this->containerConfig, ['name' => $name]);
+            } else {
+                $containerCreated = $containerManager->create($this->containerConfig);
+            }
         } catch (ClientErrorException $e) {
             return $e->getMessage();
         }
 
-        return $containerManager->start($containerCreated->getId());
+        return $containerCreated;
     }
 
     /**
@@ -87,7 +100,7 @@ class ProvisioningService implements ProvisioningServiceInterface
         //On prepare l'ip et le port de l'Host à exposer
         $portBinding = $this->prepareHostPortIp($hostPort, $hostIp);
         //Port Du container à binder sur HostPort
-        $portMap[$containerPort . '/tcp'] = [$portBinding];
+        $portMap[$containerPort.'/tcp'] = [$portBinding];
 
         return $portMap;
     }
@@ -106,6 +119,7 @@ class ProvisioningService implements ProvisioningServiceInterface
 
         //Port de l'host à binder
         $portBinding->setHostPort($hostPort);
+
         return $portBinding;
     }
 
@@ -118,8 +132,9 @@ class ProvisioningService implements ProvisioningServiceInterface
     {
         $flatEnvironmentVariable = [];
         foreach ($environmentVariable as $key => $value) {
-            $flatEnvironmentVariable[] = $key . '=' . $value;
+            $flatEnvironmentVariable[] = $key.'='.$value;
         }
+
         return $flatEnvironmentVariable;
     }
 }

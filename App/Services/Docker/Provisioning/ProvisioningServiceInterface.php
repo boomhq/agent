@@ -9,9 +9,12 @@ namespace App\Services\Docker\Provisioning;
 interface ProvisioningServiceInterface
 {
     public function createContainer(
-        string $name,
         array $envVariables,
         string $hostPort = '25565',
-        string $image = 'itzg/minecraft-server'
+        string $containerPort = '25565',
+        string $image = 'itzg/minecraft-server',
+        string $hostIp = null,
+        string $name = null
+
     );
 }
