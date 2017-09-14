@@ -24,7 +24,8 @@ class ManageContainerController extends Controller
         string $portExposedFromHost,
         string $nameOfContainer = null,
         string $portExposedFromContainer = '25565',
-        string $versionMinecraft = 'SNAPSHOT'
+        string $versionMinecraft = 'SNAPSHOT',
+        string $hostIP = '0.0.0.0'
     ) {
 
         //check port is Good and not used
@@ -53,7 +54,10 @@ class ManageContainerController extends Controller
         $newContainer = $provisioningService->createContainer(
             $envVariable,
             $portExposedFromHost,
-            $portExposedFromContainer
+            $portExposedFromContainer,
+            'itzg/minecraft-server',
+            $hostIP,
+            $nameOfContainer
         );
 
         return $newContainer;

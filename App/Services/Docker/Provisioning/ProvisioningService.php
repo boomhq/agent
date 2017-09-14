@@ -7,7 +7,7 @@ use Docker\API\Model\ContainerCreateResult;
 use Docker\API\Model\HostConfig;
 use Docker\API\Model\PortBinding;
 use Docker\Docker;
-use Http\Client\Common\Exception\ClientErrorException;
+use PHPUnit\Runner\Exception;
 
 /**
  * Class ProvisioningService
@@ -47,7 +47,7 @@ class ProvisioningService implements ProvisioningServiceInterface
      * @param string $containerPort
      * @param string $image
      * @param string $hostIp
-     * @return ContainerCreateResult;
+     * @return ContainerCreateResult|string;
      */
     public function createContainer(
         array $envVariables,
@@ -62,11 +62,15 @@ class ProvisioningService implements ProvisioningServiceInterface
         $containerManager = $this->docker->getContainerManager();
 
         $this->containerConfig->setImage($image);
-        $this->hostConfig->setPortBindings($this->prepareArrayForIpPortsBinding($hostPort, null, $containerPort));
+        $this->hostConfig->setPortBindings($this->prepareArrayForIpPortsBinding($hostPort, $hostIp, $containerPort));
         $this->containerConfig->setHostConfig($this->hostConfig);
+        $this->containerConfig->setOpenStdin(true);
+
+        $this->containerConfig->setTty(true);
         $this->containerConfig->setAttachStdin(true);
         $this->containerConfig->setAttachStdout(true);
         $this->containerConfig->setAttachStderr(true);
+
         $VariableEnv = $this->prepareEnvVariables($envVariables);
         $this->containerConfig->setEnv($VariableEnv);
 
@@ -77,7 +81,7 @@ class ProvisioningService implements ProvisioningServiceInterface
             } else {
                 $containerCreated = $containerManager->create($this->containerConfig);
             }
-        } catch (ClientErrorException $e) {
+        } catch (Exception $e) {
             return $e->getMessage();
         }
 
@@ -85,6 +89,7 @@ class ProvisioningService implements ProvisioningServiceInterface
     }
 
     /**
+     * Appel prepareHostPortIp pour construire le parametre final
      * @param string $hostPort
      * @param string|null $hostIp
      * @param string $containerPort
