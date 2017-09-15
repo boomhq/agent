@@ -12,7 +12,7 @@ use Docker\Manager\ExecManager;
  *
  * @package App\Services\Docker\Console
  */
-class ConsoleService
+class ConsoleService implements ConsoleServiceInterface
 {
     /**
      * @var Docker
@@ -49,25 +49,19 @@ class ConsoleService
                 ]
             );
         } catch (\Exception $exception) {
-
             die(print "Caught TestException ('{$exception->getMessage()}')\n{$exception}\n");
         }
 
         if (isset($attachStream)) {
             $consoleOut = "";
-
             $attachStream->write($cmd."\n");
-
-
             while (($data = $attachStream->read()) != false) {
                 $consoleOut .= $data;
             }
         } else {
             return false;
         }
-
-
-        return $consoleOut.PHP_EOL;
+        return $consoleOut;
     }
 
     /**
