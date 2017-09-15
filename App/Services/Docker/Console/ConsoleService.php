@@ -29,37 +29,56 @@ class ConsoleService
     }
 
 
-    public function executeCommandInGameServer($container, $cmd)
+    /**
+     * Exec command in Console like $me->executeCommandInConsoleAttach('inspiring_euclid','say hello')
+     * return the last line reponse
+     * @param string $containerIdOrName
+     * @param string $cmd
+     * @return string
+     */
+    public function executeCommandInConsoleAttach(string $containerIdOrName, string $cmd)
     {
-        $attachStream = $this->docker->getContainerManager()->attachWebsocket(
-            $container,
-            [
-                'logs' => true,
-                'stream' => true,
-                'stdin' => true,
-                'stdout' => true,
-                'stderr' => true,
-            ]
-        );
 
-        $attachStream->write($cmd."\n");
+        try {
+            $attachStream = $this->docker->getContainerManager()->attachWebsocket(
+                $containerIdOrName,
+                [
+                    'stream' => true,
+                    'stdout' => true,
+                    'stderr' => true,
+                ]
+            );
+        } catch (\Exception $exception) {
 
-        $consoleOut = "";
-        while ($attachStream->read()) {
-            $consoleOut .= $attachStream->read();
+            die(print "Caught TestException ('{$exception->getMessage()}')\n{$exception}\n");
         }
 
-        return $consoleOut;
+        if (isset($attachStream)) {
+            $consoleOut = "";
+
+            $attachStream->write($cmd."\n");
+
+
+            while (($data = $attachStream->read()) != false) {
+                $consoleOut .= $data;
+            }
+        } else {
+            return false;
+        }
+
+
+        return $consoleOut.PHP_EOL;
     }
 
     /**
-     * Exec command in system like $me->exec('inspiring_euclid',['ls','-al'])
-     * @param $container
-     * @param $cmd
+     * Exec commands in system (spawn tty) and return STDOUT and STDERR
+     * like $me->executeCommandsInNewTTY('inspiring_euclid',['ls','-al'])
+     * @param string $containerIdOrName
+     * @param array $cmd
      * @return array
      * @throws \Exception
      */
-    public function executeCommandInSystem($container, $cmd)
+    public function executeCommandsInNewTTY(string $containerIdOrName, array $cmd)
     {
 
         if (!is_array($cmd)) {
@@ -75,7 +94,7 @@ class ConsoleService
         $startConfig = new ExecStartConfig();
         $startConfig->setDetach(false);
 
-        $execId = $this->docker->getExecManager()->create($container, $execConfig)->getId();
+        $execId = $this->docker->getExecManager()->create($containerIdOrName, $execConfig)->getId();
         $stream = $this->docker->getExecManager()->start($execId, $startConfig, [], ExecManager::FETCH_STREAM);
 
         $stdoutText = "";
