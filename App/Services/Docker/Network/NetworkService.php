@@ -12,6 +12,7 @@ class NetworkService implements NetworkServiceInterface
 {
 
     /**
+     * return all ports exposed by host
      * @return array
      */
     public function getAllPortsHostExposed(): array
@@ -28,6 +29,7 @@ class NetworkService implements NetworkServiceInterface
                 }
             }
         }
+
         return $portsExposed;
     }
 }
