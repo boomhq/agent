@@ -8,10 +8,8 @@ use App\Services\Docker\Provisioning\ProvisioningService;
 
 class ManageContainerController extends Controller
 {
-
     private $dockerService;
     private $provisioningService;
-
 
     public function __construct()
     {
@@ -19,16 +17,15 @@ class ManageContainerController extends Controller
         $this->provisioningService = new ProvisioningService();
     }
 
-
     public function buildMinecraftContainer(
         string $portExposedFromHost,
         string $nameOfContainer = null,
         string $portExposedFromContainer = '25565',
         string $versionMinecraft = 'SNAPSHOT',
-        string $hostIP = '0.0.0.0'
+        string $hostIP = '0.0.0.0',
+        string $imageDocker = 'itzg/minecraft-server'
     ) {
-
-        //check port is Good and not used
+        //check port is Goo d and not used
 
         if ($portExposedFromHost < 1024 || $portExposedFromHost > 65536) {
             return "Impossible, le port selectionné ne fait pas partie d'une plage de port autorisés";
@@ -40,7 +37,6 @@ class ManageContainerController extends Controller
         if (in_array($portExposedFromHost, $allPortsExposed)) {
             return "Le port selectionné est utilisé";
         }
-
 
         //prepare Env Array
         $envVariable = [
@@ -55,7 +51,7 @@ class ManageContainerController extends Controller
             $envVariable,
             $portExposedFromHost,
             $portExposedFromContainer,
-            'itzg/minecraft-server',
+            $imageDocker,
             $hostIP,
             $nameOfContainer
         );
