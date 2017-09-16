@@ -61,6 +61,7 @@ class ConsoleService implements ConsoleServiceInterface
         } else {
             return false;
         }
+
         return $consoleOut;
     }
 

@@ -56,7 +56,6 @@ class ProvisioningService implements ProvisioningServiceInterface
         string $image = 'itzg/minecraft-server',
         string $hostIp = null,
         string $name = null
-
     ) {
 
         $containerManager = $this->docker->getContainerManager();

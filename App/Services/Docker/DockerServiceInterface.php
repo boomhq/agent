@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: boom
- * Date: 14/09/2017
- * Time: 09:36
- */
 
 namespace App\Services\Docker;
-
 
 /**
  * Class ContainerService
