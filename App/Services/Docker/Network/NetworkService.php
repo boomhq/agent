@@ -4,9 +4,16 @@ namespace App\Services\Docker\Network;
 
 use App\Services\Docker\DockerService;
 
-class NetworkService
+/**
+ * Class NetworkService
+ * @package App\Services\Docker\Network
+ */
+class NetworkService implements NetworkServiceInterface
 {
 
+    /**
+     * @return array
+     */
     public function getAllPortsHostExposed(): array
     {
         $app = new DockerService();
