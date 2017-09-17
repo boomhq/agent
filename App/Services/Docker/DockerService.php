@@ -40,7 +40,7 @@ class DockerService extends Docker implements DockerServiceInterface
      */
     public function findAllFiltredByStatusContainers(string $status)
     {
-        return $this->getContainerManager()->findAll(['all' => 1, 'filters' => '{ "status": [ "' . $status . '" ] }']);
+        return $this->getContainerManager()->findAll(['all' => 1, 'filters' => '{ "status": [ "'.$status.'" ] }']);
     }
 
     /**
@@ -97,4 +97,17 @@ class DockerService extends Docker implements DockerServiceInterface
     {
         return $this->getContainerManager()->kill($idOrName);
     }
+
+    /**
+     * restart a container
+     *
+     * @param string $idOrName du containter
+     * @param int $timeBeforeForce du containter en seconde
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    public function restartContainer(string $idOrName, int $timeBeforeForce = 10)
+    {
+        return $this->getContainerManager()->restart($idOrName, ['t' => $timeBeforeForce]);
+    }
+
 }

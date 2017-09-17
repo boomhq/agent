@@ -69,4 +69,13 @@ interface DockerServiceInterface
      * @return \Psr\Http\Message\ResponseInterface
      */
     public function killContainer(string $idOrName);
+
+    /**
+     * restart a container
+     *
+     * @param string $idOrName du containter
+     * @param int $timeBeforeForce du containter en seconde
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    public function restartContainer(string $idOrName, int $timeBeforeForce = 10);
 }
