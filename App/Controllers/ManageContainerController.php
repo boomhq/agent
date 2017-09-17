@@ -10,11 +10,13 @@ class ManageContainerController extends Controller
 {
     private $dockerService;
     private $provisioningService;
+    private $networkService;
 
     public function __construct()
     {
         $this->dockerService = new DockerService();
         $this->provisioningService = new ProvisioningService();
+        $this->networkService = new NetworkService();
     }
 
     public function buildMinecraftContainer(
@@ -31,8 +33,7 @@ class ManageContainerController extends Controller
             return "Impossible, le port selectionné ne fait pas partie d'une plage de port autorisés";
         }
 
-        $networkService = new NetworkService();
-        $allPortsExposed = $networkService->getAllPortsHostExposed();
+        $allPortsExposed = $this->networkService->getAllPortsHostExposed();
 
         if (in_array($portExposedFromHost, $allPortsExposed)) {
             return "Le port selectionné est utilisé";
@@ -46,8 +47,7 @@ class ManageContainerController extends Controller
             'MAX_RAM' => '256M',
         ];
 
-        $provisioningService = new ProvisioningService();
-        $newContainer = $provisioningService->createContainer(
+        $newContainer = $this->provisioningService->createContainer(
             $envVariable,
             $portExposedFromHost,
             $portExposedFromContainer,
@@ -57,5 +57,45 @@ class ManageContainerController extends Controller
         );
 
         return $newContainer;
+    }
+
+    public function stopContainer(string $containerIdOrName)
+    {
+        $stopContainerReponse = $this->dockerService->stopContainer($containerIdOrName);
+        if ($stopContainerReponse->getStatusCode() === 204) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function startContainer(string $containerIdOrName)
+    {
+        $startContainer = $this->dockerService->startContainer($containerIdOrName);
+        if ($startContainer->getStatusCode() === 204) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function restartContainer(string $containerIdOrName)
+    {
+        $restartContainer = $this->dockerService->restartContainer($containerIdOrName);
+        if ($restartContainer->getStatusCode() === 204) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function killContainer(string $containerIdOrName)
+    {
+        $killContainer = $this->dockerService->killContainer($containerIdOrName);
+        if ($killContainer->getStatusCode() === 204) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
