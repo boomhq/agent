@@ -10,7 +10,8 @@
     "bin/main"
   ],
   "require": {
-    "docker-php/docker-php": "^1.24"
+    "docker-php/docker-php": "^1.24",
+    "php-di/php-di": "^5.4"
   },
   "require-dev": {
     "phpunit/phpunit": "^6.3",

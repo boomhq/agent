@@ -12,15 +12,19 @@ class ManageContainerController extends Controller
     private $provisioningService;
     private $networkService;
 
-    public function __construct()
-    {
-        $this->dockerService = new DockerService();
-        $this->provisioningService = new ProvisioningService();
-        $this->networkService = new NetworkService();
+    public function __construct(
+        DockerService $dockerService,
+        ProvisioningService $provisioningService,
+        NetworkService $networkService
+    ) {
+        $this->dockerService = $dockerService;
+        $this->provisioningService =$provisioningService;
+        $this->networkService = $networkService;
     }
 
     public function buildMinecraftContainer(
         string $portExposedFromHost,
+        int $containerMemory = 512000000,
         string $nameOfContainer = null,
         string $portExposedFromContainer = '25565',
         string $versionMinecraft = 'SNAPSHOT',
@@ -52,6 +56,7 @@ class ManageContainerController extends Controller
             $portExposedFromHost,
             $portExposedFromContainer,
             $imageDocker,
+            $containerMemory,
             $hostIP,
             $nameOfContainer
         );

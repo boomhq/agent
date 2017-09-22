@@ -45,6 +45,7 @@ class ProvisioningService implements ProvisioningServiceInterface
      * @param array $envVariables
      * @param string $hostPort
      * @param string $containerPort
+     * @param int $memoryContainer
      * @param string $image
      * @param string $hostIp
      * @return ContainerCreateResult|string;
@@ -54,26 +55,14 @@ class ProvisioningService implements ProvisioningServiceInterface
         string $hostPort = '25565',
         string $containerPort = '25565',
         string $image = 'itzg/minecraft-server',
-        string $hostIp = null,
+        int $memoryContainer = 512000000,
+        string $hostIp = '0.0.0.0',
         string $name = null
     ) {
 
+        $this->prepareContainerConfig($envVariables, $image, $hostPort, $hostIp, $containerPort, $memoryContainer);
+
         $containerManager = $this->docker->getContainerManager();
-
-        $this->containerConfig->setImage($image);
-        $this->hostConfig->setPortBindings($this->prepareArrayForIpPortsBinding($hostPort, $hostIp, $containerPort));
-        $this->containerConfig->setHostConfig($this->hostConfig);
-        $this->containerConfig->setOpenStdin(true);
-
-        $this->containerConfig->setTty(true);
-        $this->containerConfig->setAttachStdin(true);
-        $this->containerConfig->setAttachStdout(true);
-        $this->containerConfig->setAttachStderr(true);
-
-        $VariableEnv = $this->prepareEnvVariables($envVariables);
-        $this->containerConfig->setEnv($VariableEnv);
-
-
         try {
             if (!empty($name)) {
                 $containerCreated = $containerManager->create($this->containerConfig, ['name' => $name]);
@@ -87,6 +76,43 @@ class ProvisioningService implements ProvisioningServiceInterface
         return $containerCreated;
     }
 
+    private function prepareContainerConfig(
+        array $envVariables,
+        string $image,
+        string $hostPort,
+        string $hostIp,
+        string $containerPort,
+        int $memoryContainer
+    ): ContainerConfig {
+
+        $this->prepareHostConfig($hostPort, $containerPort, $hostIp, $memoryContainer);
+
+        $this->containerConfig->setImage($image);
+        $this->containerConfig->setHostConfig($this->hostConfig);
+        $this->containerConfig->setOpenStdin(true);
+        $this->containerConfig->setTty(true);
+        $this->containerConfig->setAttachStdin(true);
+        $this->containerConfig->setAttachStdout(true);
+        $this->containerConfig->setAttachStderr(true);
+        $VariableEnv = $this->prepareEnvVariables($envVariables);
+        $this->containerConfig->setEnv($VariableEnv);
+
+        return $this->containerConfig;
+    }
+
+    private function prepareHostConfig(
+        string $hostPort,
+        string $containerPort,
+        string $hostIp,
+        int $memoryContainer
+    ): HostConfig {
+        $this->hostConfig->setPortBindings($this->prepareArrayForIpPortsBinding($hostPort, $containerPort, $hostIp));
+        $this->hostConfig->setMemory($memoryContainer);
+        $this->hostConfig->setOomKillDisable(true);
+
+        return $this->hostConfig;
+    }
+
     /**
      * Appel prepareHostPortIp pour construire le parametre final
      * @param string $hostPort
@@ -96,8 +122,8 @@ class ProvisioningService implements ProvisioningServiceInterface
      */
     private function prepareArrayForIpPortsBinding(
         string $hostPort,
-        string $hostIp = null,
-        string $containerPort = '25565'
+        string $containerPort,
+        string $hostIp
     ) {
 
         $portMap = new \ArrayObject();
@@ -120,7 +146,6 @@ class ProvisioningService implements ProvisioningServiceInterface
         $portBinding = new PortBinding();
         // filter_var($hostIp, FILTER_VALIDATE_IP);
         $portBinding->setHostIp($hostIp);
-
         //Port de l'host à binder
         $portBinding->setHostPort($hostPort);
 
