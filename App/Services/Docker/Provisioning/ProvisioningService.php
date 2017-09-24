@@ -32,12 +32,15 @@ class ProvisioningService implements ProvisioningServiceInterface
 
     /**
      * ProvisioningService constructor.
+     * @param ContainerConfig $containerConfig
+     * @param Docker $docker
+     * @param HostConfig $hostConfig
      */
-    public function __construct()
+    public function __construct(ContainerConfig $containerConfig, Docker $docker, HostConfig $hostConfig)
     {
-        $this->containerConfig = new ContainerConfig();
-        $this->docker = new Docker();
-        $this->hostConfig = new HostConfig();
+        $this->containerConfig = $containerConfig;
+        $this->docker = $docker;
+        $this->hostConfig = $hostConfig;
     }
 
     /**
@@ -108,6 +111,7 @@ class ProvisioningService implements ProvisioningServiceInterface
     ): HostConfig {
         $this->hostConfig->setPortBindings($this->prepareArrayForIpPortsBinding($hostPort, $containerPort, $hostIp));
         $this->hostConfig->setMemory($memoryContainer);
+        $this->hostConfig->setMemorySwap(0);
         $this->hostConfig->setOomKillDisable(true);
 
         return $this->hostConfig;

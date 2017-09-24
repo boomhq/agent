@@ -10,6 +10,20 @@ use App\Services\Docker\DockerService;
  */
 class NetworkService implements NetworkServiceInterface
 {
+    /**
+     * @var Docker
+     */
+    protected $dockerService;
+
+
+    /**
+     * NetworkService constructor.
+     * @param DockerService $dockerService
+     */
+    public function __construct(DockerService $dockerService)
+    {
+        $this->dockerService = $dockerService;
+    }
 
     /**
      * return all ports exposed by host
@@ -17,9 +31,8 @@ class NetworkService implements NetworkServiceInterface
      */
     public function getAllPortsHostExposed(): array
     {
-        $app = new DockerService();
 
-        $containers = $app->findAllContainers();
+        $containers = $this->dockerService->findAllContainers();
         $portsExposed = [];
         foreach ($containers as $container) {
             $ports = $container->getPorts();

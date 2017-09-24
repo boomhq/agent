@@ -21,11 +21,12 @@ class ConsoleService implements ConsoleServiceInterface
 
 
     /**
-     * ProvisioningService constructor.
+     * ConsoleService constructor.
+     * @param Docker $docker
      */
-    public function __construct()
+    public function __construct(Docker $docker)
     {
-        $this->docker = new Docker();
+        $this->docker = $docker;
     }
 
 
