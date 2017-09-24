@@ -5,21 +5,25 @@ namespace App\Controllers;
 use App\Services\Docker\DockerService;
 use App\Services\Docker\Network\NetworkService;
 use App\Services\Docker\Provisioning\ProvisioningService;
+use Psr\Log\LoggerInterface;
 
 class ManageContainerController extends Controller
 {
     private $dockerService;
     private $provisioningService;
     private $networkService;
+    private $logger;
 
     public function __construct(
         DockerService $dockerService,
         ProvisioningService $provisioningService,
-        NetworkService $networkService
+        NetworkService $networkService,
+        LoggerInterface $logger
     ) {
         $this->dockerService = $dockerService;
-        $this->provisioningService =$provisioningService;
+        $this->provisioningService = $provisioningService;
         $this->networkService = $networkService;
+        $this->logger = $logger;
     }
 
     public function buildMinecraftContainer(
@@ -60,6 +64,7 @@ class ManageContainerController extends Controller
             $hostIP,
             $nameOfContainer
         );
+        $this->logger->info('Container Created '.$newContainer->getId());
 
         return $newContainer;
     }
