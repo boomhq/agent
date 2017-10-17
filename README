@@ -1,10 +1,14 @@
 #Agent
 
-##requis :
+ ##requis :
+
 - PHP > 7
+
 - Docker
 
-##Instruction
-``composer install``
-``./startAgentPsyshCC.sh``
+ ##Instruction
+
+`composer install`
+
+`./startAgentPsyshCC.sh`
 
